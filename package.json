@@ -44,5 +44,8 @@
     "@stormkit/cli": "^0.9.1",
     "@stormkit/serverless": "^2.3.4",
     "axios": "^1.7.2"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2"
   }
 }
