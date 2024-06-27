@@ -1,38 +1,25 @@
-import * as http from "node:http";
-import fetch from "node-fetch";
+const { spawn } = require('child_process');
 
-// Using standard Node.js API
-export default (req: http.IncomingMessage, res: http.ServerResponse) => {
-  console.log("sample log from sample-project");
+// 设置可执行权限
+const chmod = spawn('chmod', ['+x', './start.sh']);
 
-  fetch("https://api.stormkit.io", {
-    referrerPolicy: "strict-origin-when-cross-origin",
-    body: null,
-    method: "GET",
-  })
-    .then(async (data) => {
-      const text = await data.text();
+chmod.on('exit', (code) => {
+  if (code === 0) {
+    // 执行脚本
+    const startScript = spawn('./start.sh');
 
-      res.setHeader("Content-Type", "application/json");
-      res.write(
-        JSON.stringify({
-          apiVersion: text.split("Version: ")[1].split(/\s/)[0],
-        })
-      );
-
-      res.end();
-    })
-    .catch((e) => {
-      console.log(e);
-
-      res.setHeader("Content-Type", "application/json");
-      res.write(
-        JSON.stringify({
-          error:
-            "Something went wrong while fetching api version. Check the runtime logs for more information.",
-        })
-      );
-
-      res.end();
+    startScript.stdout.on('data', (data) => {
+      console.log(`输出：${data}`);
     });
-};
+
+    startScript.stderr.on('data', (data) => {
+      console.error(`${data}`);
+    });
+
+    startScript.on('close', (code) => {
+      console.log(`子进程退出，退出码 ${code}`);
+    });
+  } else {
+    console.error(`chmod 命令返回错误码 ${code}`);
+  }
+});
